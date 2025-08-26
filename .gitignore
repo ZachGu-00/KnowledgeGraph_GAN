@@ -1,0 +1,41 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Large data files (should not be uploaded to GitHub)
+data/kb_entity.npz
+embeddings_cache/
+graph/knowledge_graph.pkl
+
+# Model checkpoints
+checkpoints/
+*.pth
+
+# Pickle files (cached data)
+*.pkl
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb

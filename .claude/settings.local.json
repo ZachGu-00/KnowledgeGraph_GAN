@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(timeout:*)",
+      "Read(/D:\\d D:\\Paperwork_code/**)",
+      "Bash(del debug_training.py test_loss_function.py quick_loss_test.py)",
+      "Bash(del:*)",
+      "Bash(grep:*)",
+      "Bash(pip install:*)",
+      "Bash(TQDM_DISABLE=1 python -c \"\nfrom tqdm import tqdm\nitems = range(5)\nfor i in tqdm(items, desc=''Test''):\n    pass\nprint(''Completed test'')\n\")",
+      "Bash(set TQDM_DISABLE=1)",
+      "Bash(set PYTHONIOENCODING=utf-8)",
+      "Bash(move generator.py srcgenerator )",
+      "Bash(move enhanced_semantic_matching.py srcgenerator )",
+      "Bash(move enhanced_training_utils.py srcgenerator)",
+      "Bash(copy generator.py srcgeneratorgenerator.py)",
+      "Read(/D:\\D\\Paperwork_code/**)",
+      "Bash(powershell:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "D:\\",
+      "D:\\D\\Paperwork_code"
+    ]
+  }
+}
