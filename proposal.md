@@ -83,9 +83,27 @@ The goal is to pre-train D to recognize what constitutes a "good" evidence graph
     $$
 \end{itemize}
 
-\section*{6. Training Process Summary}
-\begin{enumerate}
-    \item \textbf{Stage 1: Component Pre-training.} Pre-train G by discovering and imitating golden paths from the `kb.txt`. Concurrently or sequentially, pre-train D using positive samples from the `kb.txt` and generated negative samples.
-    \item \textbf{Stage 2: Adversarial Training.} G and D are trained alternately. D provides reward signals to G, and G provides challenging negative samples for D.
-    \item \textbf{Stage 3: Inference.} The trained Generator G is used with beam search to find the Top-K most probable reasoning paths and their terminal entities, which are returned as answers. The Discriminator is discarded.
+\setcion{Important: Pretraining for discriminator using EPR}
+遍历MetaQA三元组，生成ER-APs（e.g., "The Godfather -> director"）和RR-APs（e.g., "director <-> actor"）。正样本从标注路径提取（e.g., 1-3跳链上的模式）；
+2. EPR训练（生成全局先验）
+Bi-Encoder（召回APs，从语义角度
+输入：问题q（e.g., "Who directed The Godfather?"）编码为Vq；模式p（e.g., "movie -> director"）编码为Vp。
+训练：对比损失L = -log(sigmoid(Vq·Vp_pos)) + log(sigmoid(Vq·Vp_neg))，margin=0.2。In-batch负样本（batch内其他q的正AP作为负）。焦点语义对齐（cosine>0.7视为好）。
+MetaQA适应：用1-3跳问题微调，epochs=15，确保AP Recall@30>95%（覆盖多跳模式）。
+Cross-Encoder（排序EPs，从逻辑角度）：
+输入：拼接q + EP（e.g., "Who directed... [SEP] movie -> director -> ?x"）。
+训练：交叉熵L = -sum(y_log(p))，y=1为覆盖答案的EP。正EP：组合APs覆盖最多答案（e.g., 多导演路径）；负EP：100/正，焦点逻辑连贯（e.g., 路径完整性分数>0.8）。
+MetaQA适应：用3跳问题强调多跳逻辑，epochs=10，确保EP Precision@5>80%。
+输出：Top-10 EPs及其分数（e.g., 0.85），作为GAT边权重先验（语义分数初始化注意力，逻辑分数聚合路径）。
+3. GAT训练（注入EPR先验，精炼注意力）
+模型架构：GAT（2-3层，heads=4，hidden_dim=128），查询条件化（注意力a_ij = Attention(h_i, h_j, Vq, e_ij)，e_ij含EPR分数）。
+先验注入：
+语义注入：EPR分数（e.g., 0.85）作为边特征初始（concat到边嵌入）。
+逻辑注入：EPR EP作为路径模板，初始化注意力权重（a_init = softmax(EPR_score)）。 
+训练流程：
+输入：宏观子图（节点嵌入：KG实体向量，如TransE；边嵌入：关系向量 + EPR先验）。
+损失：L_ranking = max(0, S(P-) - S(P+) + 0.3)，S(P)=sum(log(a_i))沿路径聚合；+ λ·LKL(DEPR || DGAT)，λ=0.5（保持先验一致）。
+正路径：MetaQA标注链（e.g., 3跳多答案）；负路径：硬负（前2跳同，后1跳错，模拟逻辑断裂）。
+MetaQA适应：用3跳问题迭代，epochs=20，确保Path AUC>0.9（逻辑区分）和Semantic Recall>90%（语义覆盖）。动态阈值>0.8过滤路径。
+端到端优化：冻结EPR后联合微调GAT，MMR重排答案（λ=0.5，确保多答案多样性）。
 \end{{document}
